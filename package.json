@@ -1,0 +1,39 @@
+{
+  "name": "gulp-angular-compiler",
+  "version": "0.1.0",
+  "description": "HTML compiler for angular app",
+  "main": "index.js",
+  "scripts": {
+    "test": "gulp test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:angularifyjs/gulp-angular-compiler.git"
+  },
+  "keywords": [
+    "gulp",
+    "angular",
+    "compiler",
+    "html",
+    "angularify"
+  ],
+  "author": "Henry Tao <hi@henrytao.me>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/angularifyjs/gulp-angular-compiler/issues"
+  },
+  "homepage": "https://github.com/angularifyjs/gulp-angular-compiler",
+  "dependencies": {
+    "objectjs": "^0.9.0",
+    "through2": "^0.6.3",
+    "gulp-util": "^3.0.1"
+  },
+  "devDependencies": {
+    "coveralls": "^2.11.2",
+    "jasmine-reporters": "^2.0.3",
+    "gulp": "^3.8.10",
+    "gulp-jasmine": "^1.0.1",
+    "gulp-load-plugins": "^0.8.0",
+    "gulp-istanbul": "^0.5.0"
+  }
+}
