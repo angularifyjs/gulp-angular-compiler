@@ -8,7 +8,7 @@ describe("gulp-angular-compiler", function() {
   it('should compile successful', function(done) {
     gulp.src(['./test/input/**/*.html'])
       .pipe(plugins['ng-compiler']({
-
+      	config: {}
       }))
       .pipe(gulp.dest('./.tmp'))
       .on('end', done);

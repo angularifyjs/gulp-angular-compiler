@@ -1,7 +1,15 @@
 module.exports = require('objectjs').extend({
 
-	hello: function() {
-		return 'hello moto';
+	defOpts: {
+    config: null,
+    configDir: 'angularify.json'
+  },
+
+	compile: function(strFileData, config) {
+		return {
+			isValid: true,
+			content: strFileData
+		};
 	}
 
 });

@@ -1,4 +1,5 @@
 // through2 is a thin wrapper around node transform streams
+var _ = require('lodash');
 var path = require('path');
 var through = require('through2');
 var gutil = require('gulp-util');
@@ -8,44 +9,40 @@ var compiler = require(path.resolve(__dirname, 'src', 'compiler.js'));
 // Consts
 const PLUGIN_NAME = 'gulp-angular-compiler';
 
-function prefixStream(prefixText) {
-  var stream = through();
-  stream.write(prefixText);
-  return stream;
-}
-
 // Plugin level function(dealing with files)
-function gulpCompiler(prefixText) {
+function gulpCompiler(opts) {
+  opts = _.extend(compiler.defOpts, opts);
 
-  prefixText = compiler.hello();
-
-  if (!prefixText) {
-    throw new PluginError(PLUGIN_NAME, 'Missing prefix text!');
+  if (!opts.config && !!opts.configDir) {
+    try {
+      opts.config = require(path.resolve(opts.configDir));
+    } catch (ex) {}
   }
 
-  prefixText = new Buffer(prefixText); // allocate ahead of time
+  if (!opts || !opts.config) {
+    throw new PluginError(PLUGIN_NAME, 'Missing opts.config!');
+  }
 
   // Creating a stream through which each file will pass
   return through.obj(function(file, enc, cb) {
     if (file.isNull()) {
-      // return empty file
-      cb(null, file);
-    }
-
-    if (file.isBuffer()) {
-      file.contents = Buffer.concat([prefixText, file.contents]);
+      return cb();
     }
 
     if (file.isStream()) {
-      // define the streamer that will transform the content
-      var streamer = prefixStream(prefixText);
-      // catch errors from the streamer and emit a gulp plugin error
-      streamer.on('error', this.emit.bind(this, 'error'));
-      // start the transformation
-      file.contents = file.contents.pipe(streamer);
+      this.emit('error', new PluginError(PLUGIN_NAME, 'Streaming not supported'));
+      return cb();
     }
 
-    cb(null, file);
+    if (file.isBuffer()) {
+      var data = compiler.compile(file.contents.toString(), opts.config);
+      if (!data.isValid) {
+        return cb();
+      }
+      file.contents = new Buffer(data.content);
+    }
+
+    return cb(null, file);
   });
 
 };
