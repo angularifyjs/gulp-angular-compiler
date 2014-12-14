@@ -3,7 +3,7 @@ var compiler = require(path.resolve('src', 'compiler.js'));
 var MOCK = {
   config: {
     'mode': 'auto',
-    'baseUrls': [
+    'baseDirs': [
       'root/dir/1',
       'root/dir/2'
     ],
@@ -79,7 +79,7 @@ describe('compiler', function() {
   });
 
   describe('compile', function() {
-  	// todo
+    // todo
   });
 
   describe('getCssTag', function() {
@@ -108,11 +108,36 @@ describe('compiler', function() {
   });
 
   describe('getAllDirectories', function() {
-  	// todo
+    // todo
   });
 
   describe('getModuleDependencies', function() {
-  	// todo
+    // todo
+  });
+
+  describe('getModuleInfo', function() {
+
+    it('should return null', function() {
+      expect(compiler.getModuleInfo('sample abc xyz')).toEqual(null);
+    });
+
+    it('should return module name only', function() {
+      expect(compiler.getModuleInfo('abc angular.module(  "sample"  ).run(function(){})')).toEqual(jasmine.objectContaining({
+        'sample': []
+      }));
+      expect(compiler.getModuleInfo('abc angular.module("sample").run(function(){}; angular.module("hello").run(function(){}))')).toEqual({
+        'sample': [],
+        'hello': []
+      });
+    });
+
+    it('should return module name with dependencies', function() {
+    	expect(compiler.getModuleInfo('abc angular.module("sample", [   "abc",    "xyz"  ]).run(); angular.module("hello", ["moto"]).run(); angular.module("sample").run();')).toEqual({
+    		'sample': ['abc', 'xyz'],
+    		'hello': ['moto']
+    	});
+    });
+
   });
 
   describe('getJsTag', function() {
@@ -134,18 +159,16 @@ describe('compiler', function() {
 
   describe('isValid', function() {
 
-  	it('should false', function() {
-  		expect(compiler.isValid('hello moto')).toEqual(false);
-  	});
+    it('should false', function() {
+      expect(compiler.isValid('hello moto')).toEqual(false);
+    });
 
-  	it('should true', function() {
-  		expect(compiler.isValid('hello <!-- angularify:sample_app:css --> moto')).toEqual(true);
-  		expect(compiler.isValid('hello <!-- angularify:sample_app:js --> moto')).toEqual(true);
-  		expect(compiler.isValid('hello <!-- angularify:sample_app:css --> <!-- angularify:sample_app:js --> moto')).toEqual(true);
-  	});
+    it('should true', function() {
+      expect(compiler.isValid('hello <!-- angularify:sample_app:css --> moto')).toEqual(true);
+      expect(compiler.isValid('hello <!-- angularify:sample_app:js --> moto')).toEqual(true);
+      expect(compiler.isValid('hello <!-- angularify:sample_app:css --> <!-- angularify:sample_app:js --> moto')).toEqual(true);
+    });
 
   });
-
-
 
 });

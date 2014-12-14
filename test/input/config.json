@@ -1,8 +1,12 @@
 {
   "mode": "auto",
-  "baseUrls": [
+  "baseDirs": [
     "root/dir/1",
     "root/dir/2"
+  ],
+  "exts": [
+    "js",
+    "min.js"
   ],
   "dependencies": {
     "angularModuleName": [

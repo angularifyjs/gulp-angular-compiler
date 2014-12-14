@@ -1,10 +1,13 @@
 var _ = require('lodash');
+var path = require('path');
+var fs = require('fs');
 
 module.exports = require('objectjs').extend({
 
   defConfig: {
     mode: 'auto',
-    baseUrls: [],
+    baseDirs: [],
+    exts: ["js", "min.js"],
     dependencies: {},
     priorities: {}
   },
@@ -28,7 +31,7 @@ module.exports = require('objectjs').extend({
   },
 
   buildJs: function(list) {
-  	var internalSrcs = '';
+    var internalSrcs = '';
     var externalSrcs = '';
     _.each(list, function(src) {
       if (src.indexOf('http://') === 0 || src.indexOf('https://') === 0 || src.indexOf('//') === 0) {
@@ -63,6 +66,10 @@ module.exports = require('objectjs').extend({
     };
   },
 
+  getConfigBaseDirs: function(config) {
+    return config.baseDirs;
+  },
+
   getConfigDependencies: function(config) {
     if (config.mode === 'auto') {
       //todo
@@ -70,15 +77,71 @@ module.exports = require('objectjs').extend({
     return config.dependencies;
   },
 
+  getConfigPriorities: function(config) {
+    return config.priorities;
+  },
+
   getAllDirectories: function(type, moduleName, config) {
+    var configDependencies = this.getConfigDependencies(config);
+    var moduleDependencies = this.getModuleDependencies(moduleName, config);
 
   },
 
-  getModuleDependencies: function(moduleName) {
-    return {
-      'app': ['app.mod1', 'app.mod2'],
-      'app.mod1': ['sample1', 'sampl']
-    };
+  getModuleDependencies: function(moduleName, config) {
+    var configDependencies = this.getConfigDependencies(config);
+    var modules = {};
+    var queue = [];
+    queue.push(moduleName);
+    while (true) {
+      if (queue.length === 0) {
+        break;
+      }
+      moduleName = queue.shift();
+      if (!configDependencies[moduleName]) {
+        continue;
+      }
+      if (!modules[moduleName]) {
+        modules[moduleName] = [];
+      }
+      // _.each(configDependencies[moduleName], function(src) {
+      //   if () {
+
+      //   }
+      //   _.each(this.getConfigBaseDirs(), function(dirName) {
+      //     if () {
+
+      //     }
+      //   });
+      // }.bind(this));
+    }
+  },
+
+  getModuleInfo: function(content) {
+  	var res = null;
+  	var regex = /angular.module\(\s*['"]([^'"]*)['"]\s*\)/;
+  	var regexG = /angular.module\(\s*['"]([^'"]*)['"]\s*\)/g;
+  	_.each(content.match(regexG), function(match) {
+  		var tmp = match.match(regex);
+  		if (tmp) {
+  			if (!res) {
+  				res = {};
+  			}
+  			res[tmp[1]] = [];
+  		}
+  	});
+
+  	regex = /angular.module\(\s*['"]([^'"]*)['"]\s*,\s*\[([^\[\]]*)\]\)/;
+  	regexG = /angular.module\(\s*['"]([^'"]*)['"]\s*,\s*\[([^\[\]]*)\]\)/g;
+  	_.each(content.match(regexG), function(match) {
+  		var tmp = match.match(regex);
+  		if (tmp) {
+  			if (!res) {
+  				res = {};
+  			}
+  			res[tmp[1]] = _.union(res[tmp[1]] || [], tmp[2].replace(/[ '"]/g, '').split(','));
+  		}
+  	});
+  	return res;
   },
 
   getJsTag: function(content) {
