@@ -3,7 +3,7 @@ var gulp = require('gulp');
 var plugins = require('gulp-load-plugins')();
 plugins['ng-compiler'] = require(path.resolve('index.js'));
 
-describe("gulp-angular-compiler", function() {
+describe('gulp-angular-compiler', function() {
 
   it('should compile successful', function(done) {
     gulp.src(['./test/input/**/*.html'])

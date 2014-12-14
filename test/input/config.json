@@ -1,4 +1,5 @@
 {
+  "mode": "auto",
   "baseUrls": [
     "root/dir/1",
     "root/dir/2"

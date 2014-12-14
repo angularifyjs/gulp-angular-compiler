@@ -23,6 +23,8 @@ function gulpCompiler(opts) {
     throw new PluginError(PLUGIN_NAME, 'Missing opts.config!');
   }
 
+  opts.config = _.extend(opts.config, compiler.defConfig);
+
   // Creating a stream through which each file will pass
   return through.obj(function(file, enc, cb) {
     if (file.isNull()) {
@@ -35,11 +37,11 @@ function gulpCompiler(opts) {
     }
 
     if (file.isBuffer()) {
-      var data = compiler.compile(file.contents.toString(), opts.config);
-      if (!data.isValid) {
+      var content = file.contents.toString();
+      if (!compiler.isValid(content)) {
         return cb();
       }
-      file.contents = new Buffer(data.content);
+      file.contents = new Buffer(compiler.compile(content, opts.config));
     }
 
     return cb(null, file);
