@@ -77,6 +77,14 @@ module.exports = require('objectjs').extend({
     return config.dependencies;
   },
 
+  getConfigExts: function(config) {
+    return config.exts;
+  },
+
+  getConfigMode: function(config) {
+    return config.mode;
+  },
+
   getConfigPriorities: function(config) {
     return config.priorities;
   },
@@ -84,64 +92,78 @@ module.exports = require('objectjs').extend({
   getAllDirectories: function(type, moduleName, config) {
     var configDependencies = this.getConfigDependencies(config);
     var moduleDependencies = this.getModuleDependencies(moduleName, config);
-
+    // todo
   },
 
   getModuleDependencies: function(moduleName, config) {
-    var configDependencies = this.getConfigDependencies(config);
     var modules = {};
     var queue = [];
+    var configDependencies = this.getConfigDependencies(config);
+    var importedDirs = [];
     queue.push(moduleName);
     while (true) {
       if (queue.length === 0) {
         break;
       }
       moduleName = queue.shift();
-      if (!configDependencies[moduleName]) {
-        continue;
-      }
-      if (!modules[moduleName]) {
-        modules[moduleName] = [];
-      }
-      // _.each(configDependencies[moduleName], function(src) {
-      //   if () {
-
-      //   }
-      //   _.each(this.getConfigBaseDirs(), function(dirName) {
-      //     if () {
-
-      //     }
-      //   });
-      // }.bind(this));
+      _.each(configDependencies[moduleName], function(dir) {
+        if (_.indexOf(importedDirs, dir) >= 0) {
+          return;
+        }
+        importedDirs.push(dir);
+        _.each(this.getModuleInfoFromDir(dir, config), function(name, dependencies) {
+          _.each(_.union([name], dependencies), function(value) {
+            queue.push(value);
+          });
+          modules[name] = _.union([modules[name]], dependencies);
+        });
+      }.bind(this));
     }
+    return modules;
   },
 
   getModuleInfo: function(content) {
-  	var res = null;
-  	var regex = /angular.module\(\s*['"]([^'"]*)['"]\s*\)/;
-  	var regexG = /angular.module\(\s*['"]([^'"]*)['"]\s*\)/g;
-  	_.each(content.match(regexG), function(match) {
-  		var tmp = match.match(regex);
-  		if (tmp) {
-  			if (!res) {
-  				res = {};
-  			}
-  			res[tmp[1]] = [];
-  		}
-  	});
+    var res = null;
+    var regex = /angular.module\(\s*['"]([^'"]*)['"]\s*\)/;
+    var regexG = /angular.module\(\s*['"]([^'"]*)['"]\s*\)/g;
+    _.each(content.match(regexG), function(match) {
+      var tmp = match.match(regex);
+      if (tmp) {
+        if (!res) {
+          res = {};
+        }
+        res[tmp[1]] = [];
+      }
+    });
 
-  	regex = /angular.module\(\s*['"]([^'"]*)['"]\s*,\s*\[([^\[\]]*)\]\)/;
-  	regexG = /angular.module\(\s*['"]([^'"]*)['"]\s*,\s*\[([^\[\]]*)\]\)/g;
-  	_.each(content.match(regexG), function(match) {
-  		var tmp = match.match(regex);
-  		if (tmp) {
-  			if (!res) {
-  				res = {};
-  			}
-  			res[tmp[1]] = _.union(res[tmp[1]] || [], tmp[2].replace(/[ '"]/g, '').split(','));
-  		}
-  	});
-  	return res;
+    regex = /angular.module\(\s*['"]([^'"]*)['"]\s*,\s*\[([^\[\]]*)\]\)/;
+    regexG = /angular.module\(\s*['"]([^'"]*)['"]\s*,\s*\[([^\[\]]*)\]\)/g;
+    _.each(content.match(regexG), function(match) {
+      var tmp = match.match(regex);
+      if (tmp) {
+        if (!res) {
+          res = {};
+        }
+        res[tmp[1]] = _.union(res[tmp[1]] || [], tmp[2].replace(/[ '"]/g, '').split(','));
+      }
+    });
+    return res;
+  },
+
+  getModuleInfoFromDir: function(dir, config) {
+    if (!this.isValidImportScript(dir, config)) {
+      return null;
+    }
+    var res = null;
+    _.each(this.getConfigBaseDirs(config), function(baseDir) {
+      try {
+        if (!!res) {
+          return;
+        }
+        res = this.getModuleInfo(fs.readFileSync(path.resolve(baseDir, dir)));
+      } catch (ex) {}
+    }.bind(this));
+    return res;
   },
 
   getJsTag: function(content) {
@@ -157,6 +179,17 @@ module.exports = require('objectjs').extend({
 
   isValid: function(content) {
     return !!this.getCssTag(content) || !!this.getJsTag(content);
+  },
+
+  isValidImportScript: function(dir, config) {
+    var res = false;
+    _.each(config.getConfigExts(config), function(ext) {
+      if (path.basename(dir, '.' + ext).indexOf('.') < 0 && dir.indexOf('http://') !== 0 &&
+        dir.indexOf('https://') !== 0 && dir.indexOf('//') !== 0) {
+        res = true;
+      }
+    });
+    return res;
   }
 
 });
