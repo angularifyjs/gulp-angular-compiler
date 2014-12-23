@@ -7,6 +7,10 @@ var MOCK = {
       'root/dir/1',
       'root/dir/2'
     ],
+    "exts": [
+      "js",
+      "min.js"
+    ],
     'dependencies': {
       'angularModuleName': [
         'http://sample.com/js.js',
@@ -105,6 +109,32 @@ describe('compiler', function() {
       expect(compiler.getConfigDependencies(MOCK.config)).toEqual(MOCK.config.dependencies);
     });
 
+    // todo
+
+  });
+
+  describe('getConfigExts', function() {
+
+    it('should return config extensions', function() {
+      expect(compiler.getConfigExts(MOCK.config)).toEqual(MOCK.config.exts);
+    });
+
+  });
+
+  describe('getConfigMode', function() {
+
+    it('should return config mode', function() {
+      expect(compiler.getConfigMode(MOCK.config)).toEqual(MOCK.config.mode);
+    });
+
+  });
+
+  describe('getConfigPriorities', function() {
+
+    it('should return config priorities', function() {
+      expect(compiler.getConfigPriorities(MOCK.config)).toEqual(MOCK.config.priorities);
+    });
+
   });
 
   describe('getAllDirectories', function() {
@@ -112,7 +142,11 @@ describe('compiler', function() {
   });
 
   describe('getModuleDependencies', function() {
-    // todo
+
+    // it('should return dependencies tree', function() {
+    //   expect(compiler.getModuleDependencies(''));
+    // });
+
   });
 
   describe('getModuleInfo', function() {
@@ -132,10 +166,10 @@ describe('compiler', function() {
     });
 
     it('should return module name with dependencies', function() {
-    	expect(compiler.getModuleInfo('abc angular.module("sample", [   "abc",    "xyz"  ]).run(); angular.module("hello", ["moto"]).run(); angular.module("sample").run();')).toEqual({
-    		'sample': ['abc', 'xyz'],
-    		'hello': ['moto']
-    	});
+      expect(compiler.getModuleInfo('abc angular.module("sample", [   "abc",    "xyz"  ]).run(); angular.module("hello", ["moto"]).run(); angular.module("sample").run();')).toEqual({
+        'sample': ['abc', 'xyz'],
+        'hello': ['moto']
+      });
     });
 
   });

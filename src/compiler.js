@@ -72,7 +72,7 @@ module.exports = require('objectjs').extend({
 
   getConfigDependencies: function(config) {
     if (config.mode === 'auto') {
-      //todo
+      // todo
     }
     return config.dependencies;
   },
