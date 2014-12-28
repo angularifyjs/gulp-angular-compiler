@@ -1,29 +1,13 @@
 var path = require('path');
 var compiler = require(path.resolve('src', 'compiler.js'));
 var MOCK = {
-  config: {
-    'mode': 'auto',
-    'baseDirs': [
-      'root/dir/1',
-      'root/dir/2'
-    ],
-    "exts": [
-      "js",
-      "min.js"
-    ],
-    'dependencies': {
-      'angularModuleName': [
-        'http://sample.com/js.js',
-        '/javascript/web/url/1.css',
-        '/javascript/web/url/1.js',
-        '/javascript/web/url/2.js'
-      ]
-    },
-    'priorities': {
-      '/javascript/web/url/1.js': 10,
-      '/this/should/have/higher/prioriy.js': 1
-    }
-  }
+  config: require(path.resolve('test', 'sample', 'angularify.json'))
+};
+
+console.debug = function() {
+  console.log('--------------------------------------------');
+  console.log.apply(console, arguments);
+  console.log('--------------------------------------------');
 };
 
 describe('compiler', function() {
@@ -109,8 +93,6 @@ describe('compiler', function() {
       expect(compiler.getConfigDependencies(MOCK.config)).toEqual(MOCK.config.dependencies);
     });
 
-    // todo
-
   });
 
   describe('getConfigExts', function() {
@@ -143,9 +125,11 @@ describe('compiler', function() {
 
   describe('getModuleDependencies', function() {
 
-    // it('should return dependencies tree', function() {
-    //   expect(compiler.getModuleDependencies(''));
-    // });
+    it('should return dependencies tree', function() {
+      compiler.getModuleDependencies('app', MOCK.config);
+      // expect();
+      // todo
+    });
 
   });
 
@@ -169,6 +153,22 @@ describe('compiler', function() {
       expect(compiler.getModuleInfo('abc angular.module("sample", [   "abc",    "xyz"  ]).run(); angular.module("hello", ["moto"]).run(); angular.module("sample").run();')).toEqual({
         'sample': ['abc', 'xyz'],
         'hello': ['moto']
+      });
+    });
+
+  });
+
+  describe('getModuleInfoFromDir', function() {
+    
+    it('should return module info', function() {
+      expect(compiler.getModuleInfoFromDir('/app.js', MOCK.config)).toEqual({
+        app: ['todo', 'contact']
+      });
+    });
+
+    it('should return module info', function() {
+      expect(compiler.getModuleInfoFromDir('/todo/detail/js.js', MOCK.config)).toEqual({
+        'todo.detail': []
       });
     });
 
@@ -201,6 +201,52 @@ describe('compiler', function() {
       expect(compiler.isValid('hello <!-- angularify:sample_app:css --> moto')).toEqual(true);
       expect(compiler.isValid('hello <!-- angularify:sample_app:js --> moto')).toEqual(true);
       expect(compiler.isValid('hello <!-- angularify:sample_app:css --> <!-- angularify:sample_app:js --> moto')).toEqual(true);
+    });
+
+  });
+
+  describe('isValidImportScript', function() {
+
+    it('should false', function() {
+      expect(compiler.isValidImportScript('http://sample/library/url.com', {
+        exts: ['js', 'min.js']
+      })).toEqual(false);
+    });
+
+    it('should false', function() {
+      expect(compiler.isValidImportScript('https://sample/library/url.com', {
+        exts: ['js', 'min.js']
+      })).toEqual(false);
+    });
+
+    it('should false', function() {
+      expect(compiler.isValidImportScript('//sample/library/url.com', {
+        exts: ['js', 'min.js']
+      })).toEqual(false);
+    });
+
+    it('should false', function() {
+      expect(compiler.isValidImportScript('/sample/library/url.com', {
+        exts: ['js', 'min.js']
+      })).toEqual(false);
+    });
+
+    it('should false', function() {
+      expect(compiler.isValidImportScript('/sample/library/url.js.js', {
+        exts: ['js', 'min.js']
+      })).toEqual(false);
+    });
+
+    it('should true', function() {
+      expect(compiler.isValidImportScript('/sample/library/url.js', {
+        exts: ['js', 'min.js']
+      })).toEqual(true);
+    });
+
+    it('should true', function() {
+      expect(compiler.isValidImportScript('/sample/library/url.min.js', {
+        exts: ['js', 'min.js']
+      })).toEqual(true);
     });
 
   });

@@ -1,0 +1,32 @@
+{
+  "mode": "auto",
+  "baseDirs": [
+    "test/sample/www"
+  ],
+  "exts": [
+    "js",
+    "min.js"
+  ],
+  "dependencies": {
+    "app": [
+      "/app.css",
+      "/app.js",
+      "https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"
+    ],
+    "todo": [
+      "/todo/css.css",
+      "/todo/js.js"
+    ],
+    "todo.detail": [
+      "/todo/detail/css.css",
+      "/todo/detail/js.js"
+    ],
+    "contact": [
+      "/contact/css.css",
+      "/contact/js.js"
+    ]
+  },
+  "priorities": {
+    "https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js": 1000
+  }
+}

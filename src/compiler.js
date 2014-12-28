@@ -2,6 +2,12 @@ var _ = require('lodash');
 var path = require('path');
 var fs = require('fs');
 
+console.debug = function() {
+  console.log('--------------------------------------------');
+  console.log.apply(console, arguments);
+  console.log('--------------------------------------------');
+};
+
 module.exports = require('objectjs').extend({
 
   defConfig: {
@@ -111,14 +117,15 @@ module.exports = require('objectjs').extend({
           return;
         }
         importedDirs.push(dir);
-        _.each(this.getModuleInfoFromDir(dir, config), function(name, dependencies) {
+        _.each(this.getModuleInfoFromDir(dir, config), function(dependencies, name) {
           _.each(_.union([name], dependencies), function(value) {
             queue.push(value);
           });
-          modules[name] = _.union([modules[name]], dependencies);
+          modules[name] = !!modules[name] ? _.union([modules[name]], dependencies) : dependencies;
         });
       }.bind(this));
     }
+    console.debug(modules);
     return modules;
   },
 
@@ -144,7 +151,8 @@ module.exports = require('objectjs').extend({
         if (!res) {
           res = {};
         }
-        res[tmp[1]] = _.union(res[tmp[1]] || [], tmp[2].replace(/[ '"]/g, '').split(','));
+        var dStr = tmp[2].replace(/[\s\'\"\n\t]/g, '');
+        res[tmp[1]] = _.union(res[tmp[1]] || [], dStr === '' ? [] : dStr.split(','));
       }
     });
     return res;
@@ -160,7 +168,9 @@ module.exports = require('objectjs').extend({
         if (!!res) {
           return;
         }
-        res = this.getModuleInfo(fs.readFileSync(path.resolve(baseDir, dir)));
+        res = this.getModuleInfo(fs.readFileSync(path.join(baseDir, dir), {
+          encoding: 'utf8'
+        }));
       } catch (ex) {}
     }.bind(this));
     return res;
@@ -183,7 +193,7 @@ module.exports = require('objectjs').extend({
 
   isValidImportScript: function(dir, config) {
     var res = false;
-    _.each(config.getConfigExts(config), function(ext) {
+    _.each(this.getConfigExts(config), function(ext) {
       if (path.basename(dir, '.' + ext).indexOf('.') < 0 && dir.indexOf('http://') !== 0 &&
         dir.indexOf('https://') !== 0 && dir.indexOf('//') !== 0) {
         res = true;
