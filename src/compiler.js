@@ -2,12 +2,6 @@ var _ = require('lodash');
 var path = require('path');
 var fs = require('fs');
 
-console.debug = function() {
-  console.log('--------------------------------------------');
-  console.log.apply(console, arguments);
-  console.log('--------------------------------------------');
-};
-
 module.exports = require('objectjs').extend({
 
   defConfig: {
@@ -28,9 +22,9 @@ module.exports = require('objectjs').extend({
     var externalLinks = '';
     _.each(list, function(href) {
       if (href.indexOf('http://') === 0 || href.indexOf('https://') === 0 || href.indexOf('//') === 0) {
-        externalLinks += '<link rel="stylesheet" href="' + href + '">\n  ';
+        externalLinks += '<link rel="stylesheet" href="' + href + '">';
       } else {
-        internalLinks += '<link rel="stylesheet" href="' + href + '">\n  ';
+        internalLinks += '<link rel="stylesheet" href="' + href + '">';
       }
     });
     return externalLinks + internalLinks;
@@ -41,9 +35,9 @@ module.exports = require('objectjs').extend({
     var externalSrcs = '';
     _.each(list, function(src) {
       if (src.indexOf('http://') === 0 || src.indexOf('https://') === 0 || src.indexOf('//') === 0) {
-        externalSrcs += '<script type="text/javascript" src="' + src + '"></script>\n  ';
+        externalSrcs += '<script type="text/javascript" src="' + src + '"></script>';
       } else {
-        internalSrcs += '<script type="text/javascript" src="' + src + '"></script>\n  ';
+        internalSrcs += '<script type="text/javascript" src="' + src + '"></script>';
       }
     });
     return externalSrcs + internalSrcs;
@@ -53,10 +47,10 @@ module.exports = require('objectjs').extend({
     var cssTag = this.getCssTag(content);
     var jsTag = this.getJsTag(content);
     if (!!cssTag) {
-      content.replace(cssTag.tag, this.buildCss(this.getDirectories('css', cssTag.moduleName, config)));
+      content = content.replace(cssTag.tag, this.buildCss(this.getDirectories(['css', 'min.css'], cssTag.moduleName, config)));
     }
     if (!!jsTag) {
-      content.replace(jsTag.tag, this.buildJs(this.getDirectories('js', jsTag.moduleName, config)));
+      content = content.replace(jsTag.tag, this.buildJs(this.getDirectories(['js', 'min.js'], jsTag.moduleName, config)));
     }
     return content;
   },
@@ -219,7 +213,8 @@ module.exports = require('objectjs').extend({
   isValidImportScript: function(dir, config) {
     var res = false;
     _.each(this.getConfigExts(config), function(ext) {
-      if (path.basename(dir, '.' + ext).indexOf('.') < 0 && dir.indexOf('http://') !== 0 &&
+      ext = new RegExp('\/[^.\/]*.' + ext + '$');
+      if (ext.test(dir) && dir.indexOf('http://') !== 0 &&
         dir.indexOf('https://') !== 0 && dir.indexOf('//') !== 0) {
         res = true;
       }

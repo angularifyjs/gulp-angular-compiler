@@ -4,12 +4,6 @@ var MOCK = {
   config: require(path.resolve('test', 'sample', 'angularify.json'))
 };
 
-console.debug = function() {
-  console.log('--------------------------------------------');
-  console.log.apply(console, arguments);
-  console.log('--------------------------------------------');
-};
-
 describe('compiler', function() {
 
   describe('buildCss', function() {
@@ -29,10 +23,10 @@ describe('compiler', function() {
         'https://sample.com/test/css.css',
         '/test/url2/css.css'
       ])).toEqual([
-        '<link rel="stylesheet" href="' + '//external/url/css.css' + '">\n  ',
-        '<link rel="stylesheet" href="' + 'https://sample.com/test/css.css' + '">\n  ',
-        '<link rel="stylesheet" href="' + '/test/url/css.css' + '">\n  ',
-        '<link rel="stylesheet" href="' + '/test/url2/css.css' + '">\n  '
+        '<link rel="stylesheet" href="' + '//external/url/css.css' + '">',
+        '<link rel="stylesheet" href="' + 'https://sample.com/test/css.css' + '">',
+        '<link rel="stylesheet" href="' + '/test/url/css.css' + '">',
+        '<link rel="stylesheet" href="' + '/test/url2/css.css' + '">'
       ].join(''));
 
     });
@@ -56,10 +50,10 @@ describe('compiler', function() {
         'https://sample.com/test/js.js',
         '/test/url2/js.js'
       ])).toEqual([
-        '<script type="text/javascript" src="' + '//external/url/js.js' + '"></script>\n  ',
-        '<script type="text/javascript" src="' + 'https://sample.com/test/js.js' + '"></script>\n  ',
-        '<script type="text/javascript" src="' + '/test/url/js.js' + '"></script>\n  ',
-        '<script type="text/javascript" src="' + '/test/url2/js.js' + '"></script>\n  '
+        '<script type="text/javascript" src="' + '//external/url/js.js' + '"></script>',
+        '<script type="text/javascript" src="' + 'https://sample.com/test/js.js' + '"></script>',
+        '<script type="text/javascript" src="' + '/test/url/js.js' + '"></script>',
+        '<script type="text/javascript" src="' + '/test/url2/js.js' + '"></script>'
       ].join(''));
 
     });
@@ -67,7 +61,17 @@ describe('compiler', function() {
   });
 
   describe('compile', function() {
-    // todo
+    
+    it ('should compile content', function() {
+      expect(compiler.compile('<body> <!-- angularify:app:css --> <!-- angularify:app:js --> </body>', MOCK.config)).toEqual('<body> <link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/todo/css.css"><link rel="stylesheet" href="/contact/css.css"><link rel="stylesheet" href="/todo/detail/css.css"> <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script><script type="text/javascript" src="/app.js"></script><script type="text/javascript" src="/todo/js.js"></script><script type="text/javascript" src="/contact/js.js"></script><script type="text/javascript" src="/todo/detail/js.js"></script> </body>');
+
+      expect(compiler.compile('<body> <!-- angularify:app:css --> </body>', MOCK.config)).toEqual('<body> <link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/todo/css.css"><link rel="stylesheet" href="/contact/css.css"><link rel="stylesheet" href="/todo/detail/css.css"> </body>');
+
+      expect(compiler.compile('<body> <!-- angularify:app:js --> </body>', MOCK.config)).toEqual('<body> <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script><script type="text/javascript" src="/app.js"></script><script type="text/javascript" src="/todo/js.js"></script><script type="text/javascript" src="/contact/js.js"></script><script type="text/javascript" src="/todo/detail/js.js"></script> </body>');
+
+      expect(compiler.compile('<body> <!-- angularify:random:css --> <!-- angularify:random:js --> </body>', MOCK.config)).toEqual('<body>   </body>');
+    });
+
   });
 
   describe('getCssTag', function() {
