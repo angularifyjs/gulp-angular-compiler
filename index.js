@@ -11,7 +11,7 @@ const PLUGIN_NAME = 'gulp-angular-compiler';
 
 // Plugin level function(dealing with files)
 function gulpCompiler(opts) {
-  opts = _.extend(compiler.defOpts, opts);
+  opts = _.extend({}, compiler.defOpts, opts);
 
   if (!opts.config && !!opts.configDir) {
     try {
@@ -23,7 +23,7 @@ function gulpCompiler(opts) {
     throw new PluginError(PLUGIN_NAME, 'Missing opts.config!');
   }
 
-  opts.config = _.extend(opts.config, compiler.defConfig);
+  opts.config = _.extend({}, compiler.defConfig, opts.config);
 
   // Creating a stream through which each file will pass
   return through.obj(function(file, enc, cb) {

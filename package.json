@@ -1,7 +1,7 @@
 {
   "name": "gulp-angular-compiler",
   "version": "0.1.0",
-  "description": "HTML compiler for angular app",
+  "description": "HTML compiler for angularify app",
   "main": "index.js",
   "scripts": {
     "test": "gulp test"
