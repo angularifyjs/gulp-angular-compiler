@@ -119,16 +119,54 @@ describe('compiler', function() {
 
   });
 
-  describe('getAllDirectories', function() {
-    // todo
+  describe('getDirectories', function() {
+
+    it('should return list of directories of module x', function() {
+      expect(compiler.getDirectories(['js', 'min.js'], 'app', MOCK.config)).toEqual([
+        'https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js',
+        '/app.js',
+        '/todo/js.js',
+        '/contact/js.js',
+        '/todo/detail/js.js'
+      ]);
+
+      expect(compiler.getDirectories(['css', 'min.css'], 'app', MOCK.config)).toEqual([
+        '/app.css',
+        '/todo/css.css',
+        '/contact/css.css',
+        '/todo/detail/css.css'
+      ]);
+
+      expect(compiler.getDirectories(['css', 'min.css'], 'todo', MOCK.config)).toEqual([
+        '/todo/css.css',
+        '/todo/detail/css.css'
+      ]);
+
+      expect(compiler.getDirectories(['css', 'min.css'], 'random', MOCK.config)).toEqual([]);
+    });
+
   });
 
   describe('getModuleDependencies', function() {
 
     it('should return dependencies tree', function() {
-      compiler.getModuleDependencies('app', MOCK.config);
-      // expect();
-      // todo
+      expect(compiler.getModuleDependencies('app', MOCK.config)).toEqual({
+        app: ['todo', 'contact'],
+        todo: ['todo.detail'],
+        contact: [],
+        'todo.detail': []
+      });
+
+      expect(compiler.getModuleDependencies('todo', MOCK.config)).toEqual({
+        todo: ['todo.detail'],
+        'todo.detail': []
+      });
+
+      expect(compiler.getModuleDependencies('contact', MOCK.config)).toEqual({
+        contact: []
+      });
+
+      expect(compiler.getModuleDependencies('random', MOCK.config)).toEqual({});
     });
 
   });
@@ -159,7 +197,7 @@ describe('compiler', function() {
   });
 
   describe('getModuleInfoFromDir', function() {
-    
+
     it('should return module info', function() {
       expect(compiler.getModuleInfoFromDir('/app.js', MOCK.config)).toEqual({
         app: ['todo', 'contact']

@@ -53,10 +53,10 @@ module.exports = require('objectjs').extend({
     var cssTag = this.getCssTag(content);
     var jsTag = this.getJsTag(content);
     if (!!cssTag) {
-      content.replace(cssTag.tag, this.buildCss(this.getAllDirectories('css', cssTag.moduleName, config)));
+      content.replace(cssTag.tag, this.buildCss(this.getDirectories('css', cssTag.moduleName, config)));
     }
     if (!!jsTag) {
-      content.replace(jsTag.tag, this.buildJs(this.getAllDirectories('js', jsTag.moduleName, config)));
+      content.replace(jsTag.tag, this.buildJs(this.getDirectories('js', jsTag.moduleName, config)));
     }
     return content;
   },
@@ -95,10 +95,36 @@ module.exports = require('objectjs').extend({
     return config.priorities;
   },
 
-  getAllDirectories: function(type, moduleName, config) {
+  getDirectories: function(types, moduleName, config) {
+    var dirs = {};
+    var regexTypes = [];
+    _.each(!_.isArray(types) ? [types] : types, function(type) {
+      regexTypes.push(new RegExp('\/[^.\/]*.' + type + '$'));
+    });
     var configDependencies = this.getConfigDependencies(config);
-    var moduleDependencies = this.getModuleDependencies(moduleName, config);
-    // todo
+    var configPriorities = this.getConfigPriorities(config);
+    _.each(this.getModuleDependencies(moduleName, config), function(dependencies, name) {
+      _.each(_.union([name], dependencies), function(moduleName) {
+        _.each(configDependencies[moduleName], function(dir) {
+          _.each(regexTypes, function(regexType) {
+            if (regexType.test(dir)) {
+              dirs[dir] = {
+                name: dir,
+                priority: configPriorities[dir] || 0
+              };
+            }
+          });
+        });
+      });
+    });
+    dirs = _.sortBy(_.values(dirs), function(obj) {
+      return -obj.priority;
+    });
+    var res = [];
+    _.each(dirs, function(obj) {
+      res.push(obj.name);
+    });
+    return res;
   },
 
   getModuleDependencies: function(moduleName, config) {
@@ -125,7 +151,6 @@ module.exports = require('objectjs').extend({
         });
       }.bind(this));
     }
-    console.debug(modules);
     return modules;
   },
 
