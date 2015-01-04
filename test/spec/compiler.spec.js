@@ -99,10 +99,26 @@ describe('compiler', function() {
 
   });
 
-  describe('getConfigExts', function() {
+  describe('getConfigExtsForCss', function() {
 
     it('should return config extensions', function() {
-      expect(compiler.getConfigExts(MOCK.config)).toEqual(MOCK.config.exts);
+      expect(compiler.getConfigExtsForCss(MOCK.config)).toEqual(MOCK.config.exts.css);
+    });
+
+  });
+
+  describe('getConfigExtsForJs', function() {
+
+    it('should return config extensions', function() {
+      expect(compiler.getConfigExtsForJs(MOCK.config)).toEqual(MOCK.config.exts.js);
+    });
+
+  });
+
+  describe('getConfigExtsForInclude', function() {
+
+    it('should return config extensions', function() {
+      expect(compiler.getConfigExtsForInclude(MOCK.config)).toEqual(MOCK.config.exts.include);
     });
 
   });
@@ -251,43 +267,57 @@ describe('compiler', function() {
 
     it('should false', function() {
       expect(compiler.isValidImportScript('http://sample/library/url.com', {
-        exts: ['js', 'min.js']
+        exts: {
+          include: ['js', 'min.js']
+        }
       })).toEqual(false);
     });
 
     it('should false', function() {
       expect(compiler.isValidImportScript('https://sample/library/url.com', {
-        exts: ['js', 'min.js']
+        exts: {
+          include: ['js', 'min.js']
+        }
       })).toEqual(false);
     });
 
     it('should false', function() {
       expect(compiler.isValidImportScript('//sample/library/url.com', {
-        exts: ['js', 'min.js']
+        exts: {
+          include: ['js', 'min.js']
+        }
       })).toEqual(false);
     });
 
     it('should false', function() {
       expect(compiler.isValidImportScript('/sample/library/url.com', {
-        exts: ['js', 'min.js']
+        exts: {
+          include: ['js', 'min.js']
+        }
       })).toEqual(false);
     });
 
     it('should false', function() {
       expect(compiler.isValidImportScript('/sample/library/url.js.js', {
-        exts: ['js', 'min.js']
+        exts: {
+          include: ['js', 'min.js']
+        }
       })).toEqual(false);
     });
 
     it('should true', function() {
       expect(compiler.isValidImportScript('/sample/library/url.js', {
-        exts: ['js', 'min.js']
+        exts: {
+          include: ['js', 'min.js']
+        }
       })).toEqual(true);
     });
 
     it('should true', function() {
       expect(compiler.isValidImportScript('/sample/library/url.min.js', {
-        exts: ['js', 'min.js']
+        exts: {
+          include: ['js', 'min.js']
+        }
       })).toEqual(true);
     });
 

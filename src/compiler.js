@@ -7,7 +7,11 @@ module.exports = require('objectjs').extend({
   defConfig: {
     mode: 'auto',
     baseDirs: [],
-    exts: ["js", "min.js"],
+    exts: {
+      include: ['js', 'min.js'],
+      js: ['js', 'min.js'],
+      css: ['css', 'min.css']
+    },
     dependencies: {},
     priorities: {}
   },
@@ -47,10 +51,10 @@ module.exports = require('objectjs').extend({
     var cssTag = this.getCssTag(content);
     var jsTag = this.getJsTag(content);
     if (!!cssTag) {
-      content = content.replace(cssTag.tag, this.buildCss(this.getDirectories(['css', 'min.css'], cssTag.moduleName, config)));
+      content = content.replace(cssTag.tag, this.buildCss(this.getDirectories(this.getConfigExtsForCss(config), cssTag.moduleName, config)));
     }
     if (!!jsTag) {
-      content = content.replace(jsTag.tag, this.buildJs(this.getDirectories(['js', 'min.js'], jsTag.moduleName, config)));
+      content = content.replace(jsTag.tag, this.buildJs(this.getDirectories(this.getConfigExtsForJs(config), jsTag.moduleName, config)));
     }
     return content;
   },
@@ -77,8 +81,16 @@ module.exports = require('objectjs').extend({
     return config.dependencies;
   },
 
-  getConfigExts: function(config) {
-    return config.exts;
+  getConfigExtsForCss: function(config) {
+    return config.exts.css;
+  },
+
+  getConfigExtsForJs: function(config) {
+    return config.exts.js;
+  },
+
+  getConfigExtsForInclude: function(config) {
+    return config.exts.include;
   },
 
   getConfigMode: function(config) {
@@ -212,7 +224,7 @@ module.exports = require('objectjs').extend({
 
   isValidImportScript: function(dir, config) {
     var res = false;
-    _.each(this.getConfigExts(config), function(ext) {
+    _.each(this.getConfigExtsForInclude(config), function(ext) {
       ext = new RegExp('\/[^.\/]*.' + ext + '$');
       if (ext.test(dir) && dir.indexOf('http://') !== 0 &&
         dir.indexOf('https://') !== 0 && dir.indexOf('//') !== 0) {
