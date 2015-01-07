@@ -6,7 +6,7 @@ module.exports = require('objectjs').extend({
 
   defConfig: {
     mode: 'auto',
-    baseDirs: [],
+    baseDirs: [''],
     exts: {
       include: ['js', 'min.js'],
       js: ['js', 'min.js'],
