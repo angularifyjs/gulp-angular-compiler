@@ -212,14 +212,6 @@ describe('compiler', function() {
 
   });
 
-  describe('getConfigMode', function() {
-
-    it('should return config mode', function() {
-      expect(compiler.getConfigMode(MOCK.config)).toEqual(MOCK.config.mode);
-    });
-
-  });
-
   describe('getConfigPriorities', function() {
 
     it('should return config priorities', function() {
