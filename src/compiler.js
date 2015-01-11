@@ -77,20 +77,21 @@ module.exports = require('objectjs').extend({
     }] : []);
   },
 
-  compile: function(content, config) {
+  compile: function(content, config, injectors) {
+    injectors = this.getInjectors(injectors);
     var cssTag = this.getCssTag(content);
     var jsTag = this.getJsTag(content);
     if (!!cssTag) {
       var replaceString = '';
       _.each(this.buildGroups(config, this.getDirectories(this.getConfigExtsForCss(config), cssTag.moduleName, config)), function(group) {
-        replaceString += this.buildCss(group.dirs);
+        replaceString += injectors.onBuildCss(this.buildCss(group.dirs), group);
       }.bind(this));
       content = content.replace(cssTag.tag, replaceString);
     }
     if (!!jsTag) {
       var replaceString = '';
       _.each(this.buildGroups(config, this.getDirectories(this.getConfigExtsForJs(config), jsTag.moduleName, config)), function(group) {
-        replaceString += this.buildJs(group.dirs);
+        replaceString += injectors.onBuildJs(this.buildJs(group.dirs), group);
       }.bind(this));
       content = content.replace(jsTag.tag, replaceString);
     }
@@ -188,6 +189,17 @@ module.exports = require('objectjs').extend({
       res.push(obj.name);
     });
     return res;
+  },
+
+  getInjectors: function(injectors) {
+    return _.extend({}, {
+      onBuildCss: function(data, info) {
+        return data;
+      },
+      onBuildJs: function(data, info) {
+        return data;
+      }
+    }, injectors);
   },
 
   getModuleDependencies: function(moduleName, config) {

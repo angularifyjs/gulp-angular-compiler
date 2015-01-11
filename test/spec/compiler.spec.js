@@ -256,6 +256,26 @@ describe('compiler', function() {
 
   });
 
+  describe('getInjectors', function() {
+
+    it('should return valid injectors with default value', function() {
+      var injectors = compiler.getInjectors();
+      expect(injectors.onBuildCss('hello moto')).toEqual('hello moto');
+      expect(injectors.onBuildJs('hello moto')).toEqual('hello moto');
+    });
+
+    it('should return valid injectors', function() {
+      var injectors = compiler.getInjectors({
+        onBuildCss: function(data, info) {
+          return data + ' moto';
+        }
+      });
+      expect(injectors.onBuildCss('hello')).toEqual('hello moto');
+      expect(injectors.onBuildJs('hello moto')).toEqual('hello moto');
+    });
+
+  });
+
   describe('getModuleDependencies', function() {
 
     it('should return dependencies tree', function() {
