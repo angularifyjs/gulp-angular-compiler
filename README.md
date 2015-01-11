@@ -12,7 +12,7 @@ npm install
 gulp test
 ```
 
-More information
+More Information
 ---------
 
 Please checkout sample directory at `/test/sample/` or angularify repo [https://github.com/angularifyjs/angularify](https://github.com/angularifyjs/angularify)
