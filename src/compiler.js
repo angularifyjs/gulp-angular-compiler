@@ -6,14 +6,15 @@ module.exports = require('objectjs').extend({
 
   defConfig: {
     mode: 'auto',
-    baseDirs: [],
+    baseDirs: [''],
     exts: {
       include: ['js', 'min.js'],
       js: ['js', 'min.js'],
       css: ['css', 'min.css']
     },
     dependencies: {},
-    priorities: {}
+    priorities: {},
+    groups: []
   },
 
   defOpts: {
@@ -47,14 +48,52 @@ module.exports = require('objectjs').extend({
     return externalSrcs + internalSrcs;
   },
 
-  compile: function(content, config) {
+  buildGroups: function(config, dirs) {
+    var groups = this.getConfigGroups(config);
+    var res = [];
+    var resItems = [];
+    var newDirs = [];
+    var tmp = [];
+    dirs = dirs || [];
+    _.each(groups, function(group) {
+      newDirs = [];
+      resItems = [];
+      for (var i = 0; i < dirs.length; i++) {
+        if (group.regex.test(dirs[i])) {
+          resItems.push(dirs[i]);
+        } else {
+          newDirs.push(dirs[i]);
+        }
+      }
+      if (resItems.length > 0) {
+        res.push(_.extend({}, group, {
+          dirs: resItems
+        }));
+      }
+      dirs = newDirs;
+    });
+    return _.union(res, dirs.length > 0 ? [{
+      dirs: dirs
+    }] : []);
+  },
+
+  compile: function(content, config, injectors) {
+    injectors = this.getInjectors(injectors);
     var cssTag = this.getCssTag(content);
     var jsTag = this.getJsTag(content);
     if (!!cssTag) {
-      content = content.replace(cssTag.tag, this.buildCss(this.getDirectories(this.getConfigExtsForCss(config), cssTag.moduleName, config)));
+      var replaceString = '';
+      _.each(this.buildGroups(config, this.getDirectories(this.getConfigExtsForCss(config), cssTag.moduleName, config)), function(group) {
+        replaceString += injectors.onBuildCss(this.buildCss(group.dirs), group);
+      }.bind(this));
+      content = content.replace(cssTag.tag, replaceString);
     }
     if (!!jsTag) {
-      content = content.replace(jsTag.tag, this.buildJs(this.getDirectories(this.getConfigExtsForJs(config), jsTag.moduleName, config)));
+      var replaceString = '';
+      _.each(this.buildGroups(config, this.getDirectories(this.getConfigExtsForJs(config), jsTag.moduleName, config)), function(group) {
+        replaceString += injectors.onBuildJs(this.buildJs(group.dirs), group);
+      }.bind(this));
+      content = content.replace(jsTag.tag, replaceString);
     }
     return content;
   },
@@ -91,6 +130,25 @@ module.exports = require('objectjs').extend({
 
   getConfigExtsForInclude: function(config) {
     return config.exts.include;
+  },
+
+  getConfigGroups: function(config) {
+    var res = [];
+    _.each(config.groups, function(obj) {
+      if (_.isString(obj)) {
+        obj = {
+          regex: obj
+        };
+      }
+      if (!obj.regex) {
+        return;
+      }
+      if (_.isString(obj.regex)) {
+        obj.regex = new RegExp(obj.regex);
+      }
+      res.push(obj);
+    });
+    return res;
   },
 
   getConfigMode: function(config) {
@@ -131,6 +189,17 @@ module.exports = require('objectjs').extend({
       res.push(obj.name);
     });
     return res;
+  },
+
+  getInjectors: function(injectors) {
+    return _.extend({}, {
+      onBuildCss: function(data, info) {
+        return data;
+      },
+      onBuildJs: function(data, info) {
+        return data;
+      }
+    }, injectors);
   },
 
   getModuleDependencies: function(moduleName, config) {

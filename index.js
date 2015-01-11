@@ -41,7 +41,7 @@ function gulpCompiler(opts) {
       if (!compiler.isValid(content)) {
         return cb();
       }
-      file.contents = new Buffer(compiler.compile(content, opts.config));
+      file.contents = new Buffer(compiler.compile(content, opts.config, opts.injectors));
     }
 
     return cb(null, file);

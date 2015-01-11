@@ -60,9 +60,60 @@ describe('compiler', function() {
 
   });
 
+  describe('buildGroups', function() {
+
+    it('should build groups', function() {
+      expect(compiler.buildGroups({
+        groups: ['.*min.js$', {
+          name: 'sample group name',
+          regex: '.*.js$'
+        }]
+      }, [
+        'http://sample.com/lib.min.js',
+        'http://sample.com/lib.js',
+        'http://sample.com/js.min.js',
+        'http://sample.com/js.js'
+      ])).toEqual([{
+        regex: new RegExp('.*min.js$'),
+        dirs: [
+          'http://sample.com/lib.min.js',
+          'http://sample.com/js.min.js'
+        ]
+      }, {
+        name: 'sample group name',
+        regex: new RegExp('.*.js$'),
+        dirs: [
+          'http://sample.com/lib.js',
+          'http://sample.com/js.js'
+        ]
+      }]);
+    });
+
+    it('should build groups with no group input', function() {
+      expect(compiler.buildGroups({}, [
+        'http://sample.com/lib.min.js',
+        'http://sample.com/lib.js',
+        'http://sample.com/js.min.js',
+        'http://sample.com/js.js'
+      ])).toEqual([{
+        dirs: [
+          'http://sample.com/lib.min.js',
+          'http://sample.com/lib.js',
+          'http://sample.com/js.min.js',
+          'http://sample.com/js.js'
+        ]
+      }]);
+    });
+
+    it('should should return empty list', function() {
+      expect(compiler.buildGroups({}, [])).toEqual([]);
+    });
+
+  });
+
   describe('compile', function() {
-    
-    it ('should compile content', function() {
+
+    it('should compile content', function() {
       expect(compiler.compile('<body> <!-- angularify:app:css --> <!-- angularify:app:js --> </body>', MOCK.config)).toEqual('<body> <link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/todo/css.css"><link rel="stylesheet" href="/contact/css.css"><link rel="stylesheet" href="/todo/detail/css.css"> <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js"></script><script type="text/javascript" src="/app.js"></script><script type="text/javascript" src="/todo/js.js"></script><script type="text/javascript" src="/contact/js.js"></script><script type="text/javascript" src="/todo/detail/js.js"></script> </body>');
 
       expect(compiler.compile('<body> <!-- angularify:app:css --> </body>', MOCK.config)).toEqual('<body> <link rel="stylesheet" href="/app.css"><link rel="stylesheet" href="/todo/css.css"><link rel="stylesheet" href="/contact/css.css"><link rel="stylesheet" href="/todo/detail/css.css"> </body>');
@@ -123,6 +174,44 @@ describe('compiler', function() {
 
   });
 
+  describe('getConfigGroups', function() {
+
+    it('should return config groups', function() {
+      expect(compiler.getConfigGroups({
+        groups: []
+      })).toEqual([]);
+
+      expect(compiler.getConfigGroups({
+        groups: ['regex1', 'regex2']
+      })).toEqual([{
+        regex: new RegExp('regex1')
+      }, {
+        regex: new RegExp('regex2')
+      }]);
+
+      expect(compiler.getConfigGroups({
+        groups: ['regex1', {
+          name: 'group name',
+          regex: new RegExp('regex2')
+        }]
+      })).toEqual([{
+        regex: new RegExp('regex1')
+      }, {
+        name: 'group name',
+        regex: new RegExp('regex2')
+      }]);
+
+      expect(compiler.getConfigGroups({
+        groups: ['regex1', {
+          name: 'group name'
+        }]
+      })).toEqual([{
+        regex: new RegExp('regex1')
+      }]);
+    });
+
+  });
+
   describe('getConfigMode', function() {
 
     it('should return config mode', function() {
@@ -163,6 +252,26 @@ describe('compiler', function() {
       ]);
 
       expect(compiler.getDirectories(['css', 'min.css'], 'random', MOCK.config)).toEqual([]);
+    });
+
+  });
+
+  describe('getInjectors', function() {
+
+    it('should return valid injectors with default value', function() {
+      var injectors = compiler.getInjectors();
+      expect(injectors.onBuildCss('hello moto')).toEqual('hello moto');
+      expect(injectors.onBuildJs('hello moto')).toEqual('hello moto');
+    });
+
+    it('should return valid injectors', function() {
+      var injectors = compiler.getInjectors({
+        onBuildCss: function(data, info) {
+          return data + ' moto';
+        }
+      });
+      expect(injectors.onBuildCss('hello')).toEqual('hello moto');
+      expect(injectors.onBuildJs('hello moto')).toEqual('hello moto');
     });
 
   });

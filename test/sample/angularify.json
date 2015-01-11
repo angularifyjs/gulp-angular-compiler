@@ -29,5 +29,18 @@
   },
   "priorities": {
     "https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js": 1000
-  }
+  },
+  "groups": [{
+    "name": "libs",
+    "regex": ".*.min.css$"
+  }, {
+    "name": "css",
+    "regex": ".*.css$"
+  },{
+    "name": "libs",
+    "regex": ".*.min.js$"
+  }, {
+    "name": "js",
+    "regex": ".*.js$"
+  }]
 }

@@ -2,3 +2,4 @@ gulp-angular-compiler [![Build Status](https://travis-ci.org/angularifyjs/gulp-a
 =====================
 
 HTML compiler for angularify app
+
