@@ -13,7 +13,8 @@ module.exports = require('objectjs').extend({
       css: ['css', 'min.css']
     },
     dependencies: {},
-    priorities: {}
+    priorities: {},
+    groups: []
   },
 
   defOpts: {
@@ -47,14 +48,51 @@ module.exports = require('objectjs').extend({
     return externalSrcs + internalSrcs;
   },
 
+  buildGroups: function(config, dirs) {
+    var groups = this.getConfigGroups(config);
+    var res = [];
+    var resItems = [];
+    var newDirs = [];
+    var tmp = [];
+    dirs = dirs || [];
+    _.each(groups, function(group) {
+      newDirs = [];
+      resItems = [];
+      for (var i = 0; i < dirs.length; i++) {
+        if (group.regex.test(dirs[i])) {
+          resItems.push(dirs[i]);
+        } else {
+          newDirs.push(dirs[i]);
+        }
+      }
+      if (resItems.length > 0) {
+        res.push(_.extend({}, group, {
+          dirs: resItems
+        }));
+      }
+      dirs = newDirs;
+    });
+    return _.union(res, dirs.length > 0 ? [{
+      dirs: dirs
+    }] : []);
+  },
+
   compile: function(content, config) {
     var cssTag = this.getCssTag(content);
     var jsTag = this.getJsTag(content);
     if (!!cssTag) {
-      content = content.replace(cssTag.tag, this.buildCss(this.getDirectories(this.getConfigExtsForCss(config), cssTag.moduleName, config)));
+      var replaceString = '';
+      _.each(this.buildGroups(config, this.getDirectories(this.getConfigExtsForCss(config), cssTag.moduleName, config)), function(group) {
+        replaceString += this.buildCss(group.dirs);
+      }.bind(this));
+      content = content.replace(cssTag.tag, replaceString);
     }
     if (!!jsTag) {
-      content = content.replace(jsTag.tag, this.buildJs(this.getDirectories(this.getConfigExtsForJs(config), jsTag.moduleName, config)));
+      var replaceString = '';
+      _.each(this.buildGroups(config, this.getDirectories(this.getConfigExtsForJs(config), jsTag.moduleName, config)), function(group) {
+        replaceString += this.buildJs(group.dirs);
+      }.bind(this));
+      content = content.replace(jsTag.tag, replaceString);
     }
     return content;
   },
@@ -91,6 +129,25 @@ module.exports = require('objectjs').extend({
 
   getConfigExtsForInclude: function(config) {
     return config.exts.include;
+  },
+
+  getConfigGroups: function(config) {
+    var res = [];
+    _.each(config.groups, function(obj) {
+      if (_.isString(obj)) {
+        obj = {
+          regex: obj
+        };
+      }
+      if (!obj.regex) {
+        return;
+      }
+      if (_.isString(obj.regex)) {
+        obj.regex = new RegExp(obj.regex);
+      }
+      res.push(obj);
+    });
+    return res;
   },
 
   getConfigMode: function(config) {

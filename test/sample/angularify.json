@@ -29,5 +29,6 @@
   },
   "priorities": {
     "https://ajax.googleapis.com/ajax/libs/angularjs/1.2.0/angular.min.js": 1000
-  }
+  },
+  "groups": []
 }
