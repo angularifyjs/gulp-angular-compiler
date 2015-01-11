@@ -5,7 +5,6 @@ var fs = require('fs');
 module.exports = require('objectjs').extend({
 
   defConfig: {
-    mode: 'auto',
     baseDirs: [''],
     exts: {
       include: ['js', 'min.js'],
@@ -114,9 +113,6 @@ module.exports = require('objectjs').extend({
   },
 
   getConfigDependencies: function(config) {
-    if (config.mode === 'auto') {
-      // todo
-    }
     return config.dependencies;
   },
 
@@ -149,10 +145,6 @@ module.exports = require('objectjs').extend({
       res.push(obj);
     });
     return res;
-  },
-
-  getConfigMode: function(config) {
-    return config.mode;
   },
 
   getConfigPriorities: function(config) {
