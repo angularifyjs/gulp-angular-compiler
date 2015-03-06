@@ -5,6 +5,7 @@ var through = require('through2');
 var gutil = require('gulp-util');
 var PluginError = gutil.PluginError;
 var compiler = require(path.resolve(__dirname, 'src', 'compiler.js'));
+var fs = require('fs');
 
 // Consts
 const PLUGIN_NAME = 'gulp-angular-compiler';
@@ -15,7 +16,9 @@ function gulpCompiler(opts) {
 
   if (!opts.config && !!opts.configDir) {
     try {
-      opts.config = require(path.resolve(opts.configDir));
+      opts.config = JSON.parse(fs.readFileSync(path.resolve(opts.configDir), {
+        encoding: 'utf8'
+      }));
     } catch (ex) {}
   }
 
